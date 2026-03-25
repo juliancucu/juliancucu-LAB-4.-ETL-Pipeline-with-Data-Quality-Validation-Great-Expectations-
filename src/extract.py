@@ -4,13 +4,11 @@ import re
 
 # Cargamos el dataset
 def extract_data():
-    # Asegúrate de usar la tecla TAB para dejar este espacio a la izquierda
     df = pd.read_csv("data/raw/retail_etl_dataset.csv")
     return df
 
 # Funcion auxiliar para detectar formato de fecha
 def detect_date_format(value):
-    # Si el valor es nulo real de pandas
     if pd.isna(value):
         return "null_like"
 
