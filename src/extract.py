@@ -57,55 +57,55 @@ def parse_mixed_date(value):
 
 # Profiling basico
 def basic_profiling(df):
-    # [x] shape
+    # shape
     print("\n- SHAPE -")
     print(df.shape)
 
-    # [x] info
+    # info
     print("\n- INFO -")
     df.info()
 
-    # [x] memory
+    # memory
     print("\n- MEMORY USAGE -")
     print(df.memory_usage(deep=True))
     print("\nTotal memory usage:")
     print(df.memory_usage(deep=True).sum(), "bytes")
 
-    # [x] missing count
+    # missing count
     print("\n- MISSING COUNT -")
     print(df.isnull().sum())
 
-    # [x] missing %
+    #  missing %
     print("\n- MISSING PERCENTAGE -")
     print(((df.isnull().sum() / len(df)) * 100).round(2))
 
-    # [x] cardinality product
+    # cardinality product
     print("\n- CARDINALITY: PRODUCT -")
     print(df["product"].nunique())
 
-    # [x] cardinality country
+    # cardinality country
     print("\n- CARDINALITY: COUNTRY -")
     print(df["country"].nunique())
 
-    # [x] numeric stats
+    # numeric stats
     print("\n- NUMERIC STATS -")
     numeric_stats = df[["quantity", "price", "total_revenue"]].agg(
         ["min", "max", "mean", "median", "std"]
     )
     print(numeric_stats)
 
-    # [x] duplicate invoice_id
+    # duplicate invoice_id
     duplicate_count = df["invoice_id"].duplicated().sum()
     print("\n- DUPLICATE invoice_id -")
     print(duplicate_count)
 
-    # [x] total_revenue check
+    # total_revenue check
     calculated_total = df["quantity"] * df["price"]
     wrong_total_count = (abs(df["total_revenue"] - calculated_total) > 0.01).sum()
     print("\n- total_revenue != quantity * price (±0.01) -")
     print(wrong_total_count)
 
-    # [x] date format distribution
+    # date format distribution
     df["date_format"] = df["invoice_date"].apply(detect_date_format)
     print("\n- DATE FORMAT DISTRIBUTION -")
     print(df["date_format"].value_counts())
@@ -113,12 +113,12 @@ def basic_profiling(df):
     # Parsear fechas para revisar futuras
     df["invoice_date_parsed"] = df["invoice_date"].apply(parse_mixed_date)
 
-    # [x] future dates
+    # future dates
     future_dates_count = (df["invoice_date_parsed"] > pd.Timestamp("2023-12-31")).sum()
     print("\n- FUTURE DATES (> 2023-12-31) -")
     print(future_dates_count)
 
-    # [x] null-like dates
+    # null-like dates
     null_like_count = (df["date_format"] == "null_like").sum()
     print("\n- NULL-LIKE DATE STRINGS -")
     print(null_like_count)
@@ -166,13 +166,13 @@ def validate_raw_data(context, batch_request):
         expectation_suite_name=suite_name
     )
 
-    # Definir las Expectativas (Estas deben fallar a propósito por los problemas en el dataset)
+    # Definir las Expectativas 
     
-    # Completeness (Completitud)
+    # Completeness 
     validator.expect_column_values_to_not_be_null("customer_id")
     validator.expect_column_values_to_not_be_null("invoice_date")
     
-    # Uniqueness (Unicidad)
+    # Uniqueness 
     validator.expect_column_values_to_be_unique("invoice_id")
     
     # Validity (Validez - sin negativos ni ceros)
@@ -180,7 +180,6 @@ def validate_raw_data(context, batch_request):
     validator.expect_column_values_to_be_between("price", min_value=0.01)
     
     # Consistency (Consistencia - nombres de países estandarizados)
-    # De acuerdo a tu exploración inicial, estos deberían ser los únicos válidos
     validator.expect_column_values_to_be_in_set(
         "country", 
         ["Colombia", "Ecuador", "Peru", "Chile"]
@@ -213,7 +212,7 @@ def validate_raw_data(context, batch_request):
     print("Ejecutando validaciones...")
     checkpoint_result = context.run_checkpoint(checkpoint_name=checkpoint_name)
     
-    # Construir y abrir los Data Docs (Abrirá una pestaña en tu navegador web)
+    # Construir y abrir los Data Docs 
     print("Generando y abriendo Data Docs para visualizar los resultados...")
     context.build_data_docs()
     context.open_data_docs()
@@ -225,7 +224,7 @@ def validate_transformed_data(context, df_transformed):
     print("\n--- INICIANDO VALIDACIÓN DE DATOS TRANSFORMADOS (TASK F) ---")
     suite_name = "transformed_retail_data_suite"
     
-    #Registrar el nuevo dataframe (ya transformado) como un nuevo asset
+    #Registrar el nuevo dataframe como un nuevo asset
     data_source = context.get_datasource("retail_source")
     try:
         data_asset = data_source.get_asset("transformed_asset")
@@ -247,7 +246,7 @@ def validate_transformed_data(context, df_transformed):
         expectation_suite_name=suite_name
     )
 
-    #Definir las Expectativas (¡Estas deben pasar todas en verde!)
+    #Definir las Expectativas 
     validator.expect_column_values_to_not_be_null("customer_id")
     validator.expect_column_values_to_be_between("quantity", min_value=1)
     validator.expect_column_values_to_be_between("price", min_value=0.01)
